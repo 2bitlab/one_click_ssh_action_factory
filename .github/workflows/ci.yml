@@ -1,0 +1,68 @@
+name: Build and Push dist to OSS
+on:
+  release:
+    types: [created]
+# 使用并发取消任何当前作业或运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: 从tag中解析出当前构建的分支，仓库等，并暴露到环境变量中
+        uses: threfo/tag-parse-action@master
+        with:
+          githubToken: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: 拉取私有仓库的代码
+        uses: actions/checkout@master
+        with:
+          repository: threfo/${{ env.REPOSITORY }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+          ref: ${{ env.BRANCH }}
+      
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/tcloud.key
+          chmod 600 ~/.ssh/tcloud.key
+          cat >>~/.ssh/config <<END
+          Host tcloud
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/tcloud.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.SERVER_USERNAME }}
+          SSH_KEY: ${{ secrets.SERVER_SSH_PRIV_KEY }}
+          SSH_HOST: ${{ secrets.SERVER_HOST }}
+      - name: 运行命令
+        run: |
+          ssh -q tcloud <<EOF
+            ${{ env.RUN_COMMAND }}
+          EOF
+  
+
+      - name: 构建成功消息
+        if: ${{ success() }}
+        uses: threfo/work-wechat-msg@main
+        with:
+          botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
+          content: 🎉 项目${{ env.REPOSITORY }}，分支${{ env.BRANCH }}, 构建命令${{ env.RUN_COMMAND }} 构建成功。--- Github Actions
+        
+      - name: 构建失败消息
+        if: ${{ failure() }}
+        uses: threfo/work-wechat-msg@main
+        with:
+          botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
+          content: ❌ 项目${{ env.REPOSITORY }}，分支${{ env.BRANCH }}, 构建命令${{ env.RUN_COMMAND }} 构建失败。--- Github Actions
+        
+  
+
+
+
+
