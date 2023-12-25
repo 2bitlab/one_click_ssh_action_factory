@@ -46,17 +46,17 @@ jobs:
             ${{ env.RUN_COMMAND }}
           EOF
   
-
+        
       - name: 构建成功消息
         if: ${{ success() }}
-        uses: 2bitlab/work-wechat-msg@main
+        uses: 2bitlab/work-wechat-msg@master
         with:
           botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
           content: 🎉 项目${{ env.REPOSITORY }}，分支${{ env.BRANCH }}, 构建命令${{ env.RUN_COMMAND }} 构建成功。--- Github Actions
         
       - name: 构建失败消息
         if: ${{ failure() }}
-        uses: 2bitlab/work-wechat-msg@main
+        uses: 2bitlab/work-wechat-msg@master
         with:
           botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
           content: ❌ 项目${{ env.REPOSITORY }}，分支${{ env.BRANCH }}, 构建命令${{ env.RUN_COMMAND }} 构建失败。--- Github Actions
