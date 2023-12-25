@@ -13,14 +13,14 @@ jobs:
       fail-fast: false
     steps:
       - name: 从tag中解析出当前构建的分支，仓库等，并暴露到环境变量中
-        uses: threfo/tag-parse-action@master
+        uses: 2bitlab/tag-parse-action@master
         with:
           githubToken: ${{ secrets.ACCESS_TOKEN }}
 
       - name: 拉取私有仓库的代码
         uses: actions/checkout@master
         with:
-          repository: threfo/${{ env.REPOSITORY }}
+          repository: 2bitlab/${{ env.REPOSITORY }}
           token: ${{ secrets.ACCESS_TOKEN }}
           ref: ${{ env.BRANCH }}
       
@@ -49,14 +49,14 @@ jobs:
 
       - name: 构建成功消息
         if: ${{ success() }}
-        uses: threfo/work-wechat-msg@main
+        uses: 2bitlab/work-wechat-msg@main
         with:
           botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
           content: 🎉 项目${{ env.REPOSITORY }}，分支${{ env.BRANCH }}, 构建命令${{ env.RUN_COMMAND }} 构建成功。--- Github Actions
         
       - name: 构建失败消息
         if: ${{ failure() }}
-        uses: threfo/work-wechat-msg@main
+        uses: 2bitlab/work-wechat-msg@main
         with:
           botKey: ${{ secrets.WORK_WECHAT_GITHUB_ROBOT_KEY }}
           content: ❌ 项目${{ env.REPOSITORY }}，分支${{ env.BRANCH }}, 构建命令${{ env.RUN_COMMAND }} 构建失败。--- Github Actions
